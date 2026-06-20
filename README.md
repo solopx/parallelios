@@ -143,7 +143,7 @@ Os valores válidos são entre 512(padrão) a 8192.
 
 ## Troubleshooting e Logs de Debug
 
-O script gera um arquivo de log, `copy-tftp-flash.log`, sempre na raiz do projeto — independentemente de onde a aplicação for executada. Este arquivo contém detalhes de baixo nível das interações com os dispositivos e é extremamente útil para depuração.
+O script gera um arquivo de log, `copy-tftp-flash.log`, na raiz do projeto. Este arquivo contém detalhes de baixo nível das interações com os dispositivos e é extremamente útil para depuração.
 
 ## Observações sobre `MAX_WORKERS` e `TIMEOUT_MAX`
 
@@ -155,15 +155,15 @@ Já o campo `TRANSFER TIMEOUT` define o tempo máximo(em minutos) que o script i
 
 Esta aplicação atualmente está dividida nos seguintes arquivos principais:
 
-* `main.py` - Ponto de entrada da aplicação. Conecta a interface gráfica à lógica de rede, gerencia validações de input e roteia a execução para o motor de transferência correto (IOS ou NX-OS) conforme o módulo selecionado.
+* `main.py` - Ponto de entrada da aplicação.
 
-* `gui.py` - Interface gráfica em Tkinter. Define o layout, estilos visuais e expõe os widgets para o main orquestrar.
+* `gui.py` - Interface gráfica em Tkinter.
 
-* `engine_core.py` - Funções e estado compartilhados entre os motores de transferência: validação de IPs, verificação de espaço em disco, logging e orquestração das transferências paralelas (`ThreadPoolExecutor`).
+* `engine_core.py` - Funções e estado compartilhados entre os motores de transferência.
 
-* `ios_engine.py` - Motor de transferência específico para dispositivos Cisco IOS/IOS-XE (filesystem `flash:`, comando `verify /md5`, enable mode).
+* `ios_engine.py` - Motor de transferência específico para dispositivos Cisco IOS/IOS-XE.
 
-* `nxos_engine.py` - Motor de transferência específico para dispositivos Cisco NX-OS (filesystem `bootflash:`, comando `show file ... md5sum`, sem enable mode).
+* `nxos_engine.py` - Motor de transferência específico para dispositivos Cisco NX-OS.
 
 ## Futuro
 

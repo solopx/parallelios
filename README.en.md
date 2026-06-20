@@ -168,15 +168,15 @@ The `TRANSFER TIMEOUT` field defines the maximum time (in minutes) that the scri
 
 This application is currently divided into the following main files:
 
-* `main.py` - Application entry point. Connects the graphical interface to the network logic, manages input validations, and routes execution to the correct transfer engine (IOS or NX-OS) based on the selected module.
+* `main.py` - Application entry point.
 
-* `gui.py` - Graphical interface in Tkinter. Defines the layout, visual styles, and exposes the widgets for the main to orchestrate.
+* `gui.py` - Graphical interface in Tkinter.
 
-* `engine_core.py` - Shared functions and state used by both transfer engines: IP validation, disk space check, logging, and parallel transfer orchestration (`ThreadPoolExecutor`).
+* `engine_core.py` - Shared functions and state used by both transfer engines.(`ThreadPoolExecutor`).
 
-* `ios_engine.py` - Transfer engine specific to Cisco IOS/IOS-XE devices (`flash:` filesystem, `verify /md5` command, enable mode).
+* `ios_engine.py` - Transfer engine specific to Cisco IOS/IOS-XE devices.
 
-* `nxos_engine.py` - Transfer engine specific to Cisco NX-OS devices (`bootflash:` filesystem, `show file ... md5sum` command, no enable mode).
+* `nxos_engine.py` - Transfer engine specific to Cisco NX-OS devices.
 
 ## Future
 
