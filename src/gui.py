@@ -91,10 +91,6 @@ def build_gui():
 
     configure_theme(root)
 
-    # Scrollable container: keeps the layout pixel-identical at the normal
-    # 900x900 size (scrollbar stays hidden) but lets the user reach
-    # Start/Stop and the log by scrolling when the window is shorter than
-    # the content — e.g. on small-resolution screens.
     scroll_canvas = tk.Canvas(root, bg=COLORS["bg"], highlightthickness=0)
     vscroll = ttk.Scrollbar(root, orient="vertical", command=scroll_canvas.yview)
     scroll_canvas.configure(yscrollcommand=vscroll.set)
@@ -103,10 +99,6 @@ def build_gui():
     main_container = tk.Frame(scroll_canvas, padx=15, pady=10)
     canvas_window = scroll_canvas.create_window((0, 0), window=main_container, anchor="nw")
 
-    # Output Log (frm_log, defined further below) is the only child with
-    # expand=True — it absorbs whatever space is left over, same as it did
-    # when main_container was packed directly into root. LOG_MIN_HEIGHT is
-    # the floor it can shrink to before we switch to scrolling instead.
     LOG_MIN_HEIGHT = 80
 
     def _content_min_height():
@@ -359,8 +351,6 @@ def build_gui():
     output_box.tag_config("device",  foreground="#2196f3",            font=FONT_MONO_B)
     output_box.tag_config("header",  foreground="#CCCCCC",            font=FONT_MONO_B)
     output_box.pack(fill="both", expand=True)
-    # Read-only but selectable/copyable: blocks typed edits without disabling
-    # the widget (a disabled Text widget can't be selected with the mouse).
     output_box.bind("<Key>", lambda e: "break")
     output_box.configure(insertwidth=0)
 
@@ -377,7 +367,6 @@ def build_gui():
         entry_pass.config(state=state)
         entry_workers.config(state=state)
         entry_timeout.config(state=state)
-        # Text widgets have no disabled* color variant of their own — set bg/fg manually
         entry_ips.config(
             state=state,
             bg=COLORS["bg"] if locked else COLORS["bg_input"],
