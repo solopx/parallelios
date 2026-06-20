@@ -106,7 +106,7 @@ def check_space(conn, filesystem, file_size_bytes, log_func):
         return False
 
 # ==============================================================================
-# Vendor adapter: the small set of points where IOS and NX-OS actually differ
+# Vendor adapter
 # ==============================================================================
 
 @dataclass
@@ -322,7 +322,7 @@ def process_single_device(
             results_queue.put((display_id, outcome, failure_reason))
 
 # ==============================================================================
-# Parallel transfer orchestration (shared between engines)
+# Parallel transfer orchestration
 # ==============================================================================
 
 def transfer_and_verify_all(
