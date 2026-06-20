@@ -91,8 +91,56 @@ def build_gui():
 
     configure_theme(root)
 
-    main_container = tk.Frame(root, padx=15, pady=10)
-    main_container.pack(fill="both", expand=True)
+    # Scrollable container: keeps the layout pixel-identical at the normal
+    # 900x900 size (scrollbar stays hidden) but lets the user reach
+    # Start/Stop and the log by scrolling when the window is shorter than
+    # the content — e.g. on small-resolution screens.
+    scroll_canvas = tk.Canvas(root, bg=COLORS["bg"], highlightthickness=0)
+    vscroll = ttk.Scrollbar(root, orient="vertical", command=scroll_canvas.yview)
+    scroll_canvas.configure(yscrollcommand=vscroll.set)
+    scroll_canvas.pack(side="left", fill="both", expand=True)
+
+    main_container = tk.Frame(scroll_canvas, padx=15, pady=10)
+    canvas_window = scroll_canvas.create_window((0, 0), window=main_container, anchor="nw")
+
+    # Output Log (frm_log, defined further below) is the only child with
+    # expand=True — it absorbs whatever space is left over, same as it did
+    # when main_container was packed directly into root. LOG_MIN_HEIGHT is
+    # the floor it can shrink to before we switch to scrolling instead.
+    LOG_MIN_HEIGHT = 80
+
+    def _content_min_height():
+        fixed_total = int(main_container.cget("pady")) * 2
+        for child in main_container.winfo_children():
+            if child is frm_log:
+                continue
+            pad = child.pack_info().get("pady", 0)
+            pad_total = sum(int(x) for x in pad) if isinstance(pad, (tuple, list)) else int(pad) * 2
+            fixed_total += child.winfo_reqheight() + pad_total
+        return fixed_total + LOG_MIN_HEIGHT
+
+    def _on_canvas_configure(event):
+        target_height = max(event.height, _content_min_height())
+        scroll_canvas.itemconfig(canvas_window, width=event.width, height=target_height)
+        scroll_canvas.configure(scrollregion=(0, 0, event.width, target_height))
+        if target_height > event.height:
+            if not vscroll.winfo_ismapped():
+                vscroll.pack(side="right", fill="y")
+        else:
+            if vscroll.winfo_ismapped():
+                vscroll.pack_forget()
+
+    scroll_canvas.bind("<Configure>", _on_canvas_configure)
+
+    def _on_mousewheel(event):
+        scroll_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    def _on_mousewheel_linux(direction):
+        scroll_canvas.yview_scroll(direction, "units")
+
+    scroll_canvas.bind_all("<MouseWheel>", _on_mousewheel)
+    scroll_canvas.bind_all("<Button-4>", lambda e: _on_mousewheel_linux(-3))
+    scroll_canvas.bind_all("<Button-5>", lambda e: _on_mousewheel_linux(3))
 
     # ==================================================================
     # TITLE
@@ -101,13 +149,12 @@ def build_gui():
     header_frame = tk.Frame(
     main_container,
     bg=COLORS["bg"],
-    width=900,
     height=80,
     relief="groove",
     borderwidth=2,
     )
     header_frame.pack_propagate(False)
-    header_frame.pack(pady=(10, 20))
+    header_frame.pack(fill="x", pady=(10, 20))
 
     lbl_title = tk.Label(
     header_frame,
