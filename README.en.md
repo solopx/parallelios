@@ -156,7 +156,7 @@ Valid values ​​are between 512 (default) and 8192.
 
 ## Troubleshooting and Debug Logs
 
-The script generates a log file called `copy-tftp-flash.log` at the root directory. This file contains low-level details of interactions with devices and is extremely useful for debugging.
+The script generates a single log file, `copy-tftp-flash.log`, always at the project root — regardless of where the application is run from. This file contains low-level details of interactions with devices and is extremely useful for debugging.
 
 ## Notes on `MAX_WORKERS` and `TIMEOUT_MAX` ##
 

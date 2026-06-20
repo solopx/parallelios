@@ -1,3 +1,4 @@
+import os
 import re
 import time
 import queue
@@ -25,7 +26,9 @@ connections_lock = threading.Lock()
 netmiko_logger = logging.getLogger("netmiko")
 netmiko_logger.setLevel(logging.DEBUG)
 
-file_handler = logging.FileHandler("copy-tftp-flash.log", encoding="UTF-8")
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOG_PATH = os.path.join(PROJECT_ROOT, "copy-tftp-flash.log")
+file_handler = logging.FileHandler(LOG_PATH, encoding="UTF-8")
 file_handler.setLevel(logging.DEBUG)
 
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -138,9 +141,11 @@ def process_single_device(
     transfer_timeout,
 ):
     if stop_event.is_set():
+        results_queue.put((ip, "failed", "Interrupted by user"))
         return
 
-    device_status_ok = True
+    outcome = "failed"
+    failure_reason = "Unknown error"
     display_id = ip
     fatal_errors = ["%Error", "Timed out", "Invalid", "refused", "not found"]
 
@@ -194,6 +199,7 @@ def process_single_device(
         md5_matches_locally = False
         if md5_matches(res, md5_hash):
             md5_matches_locally = True
+            outcome = "skipped"
             log(f"{md5_check_timestamp} - Local MD5 hash matches. Skipping file copy for '{display_id}'.", "success")
         else:
             log(f"{md5_check_timestamp} - File not found or MD5 hash mismatch. Proceeding with copy for '{display_id}'", "device")
@@ -265,10 +271,12 @@ def process_single_device(
             )
 
             if md5_matches(res_final, md5_hash):
+                outcome = "copied"
                 log("Copy complete and MD5 verified successfully!", "success")
             else:
+                outcome = "failed"
+                failure_reason = "MD5 hash mismatch after copy"
                 log("ERROR! Copy failed! MD5 hash does not match!", "error")
-                device_status_ok = False
 
             end_timestamp = datetime.now().strftime("%H:%M:%S")
             log(f"Transfer completed at {end_timestamp}", "success")
@@ -278,13 +286,15 @@ def process_single_device(
     except NetmikoTimeoutException as e:
         timestamp = datetime.now().strftime("%H:%M:%S")
         first_line = str(e).splitlines()[0]
+        outcome = "failed"
+        failure_reason = first_line
         log(f"{timestamp} - ERROR {first_line}", "error")
-        device_status_ok = False
 
     except NetmikoAuthenticationException:
         timestamp = datetime.now().strftime("%H:%M:%S")
+        outcome = "failed"
+        failure_reason = f"Authentication failed for {ip} — {adapter.auth_error_suffix}"
         log(f"{timestamp} - ERROR Authentication failed for {ip} — {adapter.auth_error_suffix}", "error")
-        device_status_ok = False
 
     except Exception as e:
         with connections_lock:
@@ -296,18 +306,20 @@ def process_single_device(
                 pass
 
         timestamp = datetime.now().strftime("%H:%M:%S")
+        outcome = "failed"
         if stop_event.is_set():
             msg = f"{timestamp} - INTERRUPTED"
+            failure_reason = "Interrupted by user"
         else:
             msg = f"{timestamp} - ERROR {str(e)}"
+            failure_reason = str(e)
 
         log(msg, "error")
-        device_status_ok = False
 
     finally:
         with connections_lock:
             active_connections.pop(ip, None)
-            results_queue.put(device_status_ok)
+            results_queue.put((display_id, outcome, failure_reason))
 
 # ==============================================================================
 # Parallel transfer orchestration (shared between engines)
@@ -356,8 +368,11 @@ def transfer_and_verify_all(
         for future in futures:
             future.result()
 
+    details = []
     while not results_queue.empty():
-        if results_queue.get():
+        display_id, outcome, failure_reason = results_queue.get()
+        details.append((display_id, outcome, failure_reason))
+        if outcome != "failed":
             success_count += 1
 
-    on_complete(success_count, total)
+    on_complete(success_count, total, details)

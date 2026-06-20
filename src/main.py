@@ -27,7 +27,7 @@ def main():
                 output_box.see(tk.END)
         root.after(0, _insert)
 
-    def on_complete(success_count, total):
+    def on_complete(success_count, total, details):
         def _update():
             summary_tag = "success" if success_count == total else "error"
             output_box.insert(tk.END, "\n--- Tasks Completed ---\n", "header")
@@ -36,6 +36,24 @@ def main():
                 f"Sucess: {success_count} | Error: {total - success_count}\n",
                 summary_tag,
             )
+
+            copied = [d for d in details if d[1] == "copied"]
+            skipped = [d for d in details if d[1] == "skipped"]
+            failed = [d for d in details if d[1] == "failed"]
+
+            if copied:
+                output_box.insert(tk.END, "\nCopied & Verified:\n", "success")
+                for display_id, _, _ in copied:
+                    output_box.insert(tk.END, f"  [OK] {display_id}\n", "success")
+            if skipped:
+                output_box.insert(tk.END, "\nMD5 Match (Copy Skipped):\n", "success")
+                for display_id, _, _ in skipped:
+                    output_box.insert(tk.END, f"  [OK] {display_id}\n", "success")
+            if failed:
+                output_box.insert(tk.END, "\nFailed:\n", "error")
+                for display_id, _, reason in failed:
+                    output_box.insert(tk.END, f"  [X] {display_id} - {reason}\n", "error")
+
             if not output_box.tag_ranges("sel"):
                 output_box.see(tk.END)
             btn_start.config(state="normal", bg=COLORS["btn_start"])
@@ -103,7 +121,7 @@ def main():
             return
 
         btn_start.config(state="disabled", bg=COLORS["btn_start_disabled"])
-        btn_stop.config(state="normal", bg="#dc3545")
+        btn_stop.config(state="normal", bg=COLORS["btn_stop"])
         w["lock_inputs"]()
         output_box.delete("1.0", tk.END)
         module = w["module_var"].get()
