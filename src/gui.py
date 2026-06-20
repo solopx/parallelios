@@ -87,7 +87,7 @@ def build_gui():
     root = tk.Tk()
     root.title(f"{APP_NAME} - {APP_VERSION}")
     root.geometry("900x900")
-    root.resizable(False, False)
+    root.resizable(False, True)
 
     configure_theme(root)
 
