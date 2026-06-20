@@ -14,8 +14,9 @@ COLORS = {
     "fg_value":   "#000000",
     "console_bg": "#000000",
     "console_fg": "#00CC00",
-    "btn_start":  "#008000",
-    "btn_stop":   "#800000",
+    "btn_start":          "#008000",
+    "btn_start_disabled": "#004D00",
+    "btn_stop":           "#800000",
 }
 
 FONT =          ("Ubuntu", 10)
@@ -309,6 +310,7 @@ def build_gui():
     output_box.tag_config("success", foreground=COLORS["console_fg"],   font=FONT_MONO_B)
     output_box.tag_config("warning", foreground="#f1fa8c",            font=FONT_MONO_B)
     output_box.tag_config("device",  foreground="#2196f3",            font=FONT_MONO_B)
+    output_box.tag_config("header",  foreground="#CCCCCC",            font=FONT_MONO_B)
     output_box.pack(fill="both", expand=True)
     # Read-only but selectable/copyable: blocks typed edits without disabling
     # the widget (a disabled Text widget can't be selected with the mouse).
@@ -328,7 +330,12 @@ def build_gui():
         entry_pass.config(state=state)
         entry_workers.config(state=state)
         entry_timeout.config(state=state)
-        entry_ips.config(state=state)
+        # Text widgets have no disabled* color variant of their own — set bg/fg manually
+        entry_ips.config(
+            state=state,
+            bg=COLORS["bg"] if locked else COLORS["bg_input"],
+            fg=COLORS["fg_muted"] if locked else COLORS["fg_value"],
+        )
         chk_enable.config(state="disabled" if locked else "normal")
         module_combo.config(state="disabled" if locked else "readonly")
         entry_enable_pass.config(

@@ -185,16 +185,18 @@ def process_single_device(
 
         log(f"Connecting to... '{ip}'", "device")
         log(f"Checking for file '{ios_filename}' on '{display_id}'...", "warning")
-        log("Calculating MD5 hash on device — this can take a few minutes for large files...", "warning")
+        md5_start_timestamp = datetime.now().strftime("%H:%M:%S")
+        log(f"{md5_start_timestamp} - Calculating MD5 hash on device — this can take a few minutes for large files...", "warning")
 
         res = conn.send_command_timing(adapter.verify_cmd(ios_filename), read_timeout=0)
 
+        md5_check_timestamp = datetime.now().strftime("%H:%M:%S")
         md5_matches_locally = False
         if md5_matches(res, md5_hash):
             md5_matches_locally = True
-            log(f"Local MD5 hash matches. Skipping file copy for '{display_id}'.", "success")
+            log(f"{md5_check_timestamp} - Local MD5 hash matches. Skipping file copy for '{display_id}'.", "success")
         else:
-            log(f"File not found or MD5 hash mismatch. Proceeding with copy for '{display_id}'", "device")
+            log(f"{md5_check_timestamp} - File not found or MD5 hash mismatch. Proceeding with copy for '{display_id}'", "device")
 
         if not md5_matches_locally and not stop_event.is_set():
 
@@ -256,7 +258,8 @@ def process_single_device(
                 raise Exception(f"Copy timed out after {transfer_timeout // 60} min")
 
             log("Checking integrity of copied file...", "warning")
-            log("Calculating MD5 hash on device — this can take a few minutes for large files...", "warning")
+            md5_start_timestamp = datetime.now().strftime("%H:%M:%S")
+            log(f"{md5_start_timestamp} - Calculating MD5 hash on device — this can take a few minutes for large files...", "warning")
             res_final = conn.send_command_timing(
                 adapter.verify_cmd(ios_filename), read_timeout=0, last_read=15.0
             )

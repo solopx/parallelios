@@ -30,9 +30,10 @@ def main():
     def on_complete(success_count, total):
         def _update():
             summary_tag = "success" if success_count == total else "error"
+            output_box.insert(tk.END, "\n--- Tasks Completed ---\n", "header")
             output_box.insert(
                 tk.END,
-                f"\n--- Tasks Completed ---\nSucess: {success_count} | Error: {total - success_count}\n",
+                f"Sucess: {success_count} | Error: {total - success_count}\n",
                 summary_tag,
             )
             if not output_box.tag_ranges("sel"):
@@ -101,7 +102,7 @@ def main():
             messagebox.showerror("Error", "Transfer Timeout must be a whole number between 1 and 99 minutes.")
             return
 
-        btn_start.config(state="disabled", bg=COLORS["btn_stop"])
+        btn_start.config(state="disabled", bg=COLORS["btn_start_disabled"])
         btn_stop.config(state="normal", bg="#dc3545")
         w["lock_inputs"]()
         output_box.delete("1.0", tk.END)
