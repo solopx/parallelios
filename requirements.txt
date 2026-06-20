@@ -1,0 +1,2 @@
+pytest>=9.1.0
+netmiko>=4.7.0
