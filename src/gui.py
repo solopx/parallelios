@@ -86,41 +86,13 @@ def configure_theme(root):
 def build_gui():
     root = tk.Tk()
     root.title(f"{APP_NAME} - {APP_VERSION}")
-    root.geometry("900x950")
-    root.resizable(False, True)
+    root.geometry("900x900")
+    root.resizable(False, False)
 
     configure_theme(root)
 
-    # Scrollable container: on screens shorter than the window's natural
-    # height, this lets the user scroll down to reach the Start/Stop
-    # buttons and the log instead of having them clipped with no way in.
-    scroll_canvas = tk.Canvas(root, bg=COLORS["bg"], highlightthickness=0)
-    vscroll = ttk.Scrollbar(root, orient="vertical", command=scroll_canvas.yview)
-    scroll_canvas.configure(yscrollcommand=vscroll.set)
-    scroll_canvas.pack(side="left", fill="both", expand=True)
-    vscroll.pack(side="right", fill="y")
-
-    main_container = tk.Frame(scroll_canvas, padx=15, pady=10)
-    canvas_window = scroll_canvas.create_window((0, 0), window=main_container, anchor="nw")
-
-    def _on_main_container_configure(_event):
-        scroll_canvas.configure(scrollregion=scroll_canvas.bbox("all"))
-
-    def _on_canvas_configure(event):
-        scroll_canvas.itemconfig(canvas_window, width=event.width)
-
-    main_container.bind("<Configure>", _on_main_container_configure)
-    scroll_canvas.bind("<Configure>", _on_canvas_configure)
-
-    def _on_mousewheel(event):
-        scroll_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-
-    def _on_mousewheel_linux(direction):
-        scroll_canvas.yview_scroll(direction, "units")
-
-    scroll_canvas.bind_all("<MouseWheel>", _on_mousewheel)
-    scroll_canvas.bind_all("<Button-4>", lambda e: _on_mousewheel_linux(-3))
-    scroll_canvas.bind_all("<Button-5>", lambda e: _on_mousewheel_linux(3))
+    main_container = tk.Frame(root, padx=15, pady=10)
+    main_container.pack(fill="both", expand=True)
 
     # ==================================================================
     # TITLE
@@ -129,12 +101,13 @@ def build_gui():
     header_frame = tk.Frame(
     main_container,
     bg=COLORS["bg"],
+    width=900,
     height=80,
     relief="groove",
     borderwidth=2,
     )
     header_frame.pack_propagate(False)
-    header_frame.pack(fill="x", pady=(10, 20))
+    header_frame.pack(pady=(10, 20))
 
     lbl_title = tk.Label(
     header_frame,
