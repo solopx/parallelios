@@ -79,6 +79,12 @@ To use this script, you will need:
 ```bash
 Python 3.x
 ```
+**Linux:** the `tkinter` module (used by the graphical interface) **cannot be installed via `pip`** — it's an operating system package, separate from Python itself. If you get `ModuleNotFoundError: No module named 'tkinter'` when running the script, install it manually:
+```bash
+sudo apt install python3-tk        # Debian/Ubuntu
+sudo dnf install python3-tkinter   # Fedora
+```
+On Windows, the official installer from [python.org](https://www.python.org/downloads/) already includes Tcl/Tk by default (the "tcl/tk and IDLE" option is checked) — it's usually only missing from minimal/custom installations.
 ### Running the beast:
 
 1. **Download the Repository:**
